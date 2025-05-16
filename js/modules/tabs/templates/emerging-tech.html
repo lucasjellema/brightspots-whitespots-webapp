@@ -1,0 +1,143 @@
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Top 10 Technology Trends by Interest Level</span>
+                <button class="btn btn-sm btn-link p-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#topTrendsCollapse" aria-expanded="true" aria-controls="topTrendsCollapse">
+                    <i class="bi bi-chevron-up fs-5" id="topTrendsCollapseIcon"></i>
+                </button>
+            </div>
+            <div class="collapse show" id="topTrendsCollapse">
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:400px;">
+                        <canvas id="topTrendsChart"></canvas>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button id="viewAllTrendsBtn" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-arrow-down"></i> View Chart with All Trends
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Emerging Tech & Vendors Overview</span>
+                <div class="d-flex align-items-center">
+                    <div class="input-group me-2" style="max-width: 300px;">
+                        <input type="text" id="techSearch" class="form-control" placeholder="Search technologies...">
+                        <button class="btn btn-outline-secondary" type="button" id="techSearchBtn">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                    <button class="btn btn-sm btn-link p-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#techOverviewCollapse" aria-expanded="true" aria-controls="techOverviewCollapse">
+                        <i class="bi bi-chevron-up fs-5" id="techOverviewCollapseIcon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="collapse show" id="techOverviewCollapse">
+                <div class="card-body">
+                    <p>This section displays emerging technologies, vendors, and products identified from survey responses. Each card represents feedback from a respondent about technology interests and preferences.</p>
+                    <div class="alert alert-info" id="info-alert">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>Responses:</strong> <span id="tech-response-count"></span> respondents provided feedback on emerging technologies.
+                            </div>
+                            <div>
+                                <span class="badge bg-secondary">Current View</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Status row showing current filters -->
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div>
+                                <span id="view-status" class="badge bg-success">Showing all entries</span>
+                                <span id="search-info" style="display: none;">
+                                    <span class="badge bg-secondary">Search: "<span id="inline-search-term"></span>" (<span id="inline-search-count"></span> results)</span>
+                                    <button type="button" class="btn btn-sm btn-link p-0 ms-1" id="inline-clear-search">Clear</button>
+                                </span>
+                            </div>
+                            <div id="filter-info" style="display: none;">
+                                <span class="badge bg-primary">Filtered by tag: <span id="filter-tag"></span></span>
+                                <button type="button" class="btn btn-sm btn-link p-0 ms-2" id="inline-clear-filter">Clear</button>
+                            </div>
+                    </div>
+                    <!-- Keep the original search results alert but hide it by default -->
+                    <div class="alert alert-secondary" id="search-results-alert" style="display: none;">
+                        <strong>Search Results:</strong> Found <span id="search-results-count">0</span> entries containing "<span id="search-term"></span>"
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-3" id="clearSearchBtn">Clear Search</button>
+                    </div>
+                    
+                    <!-- Tech & Vendor Tags (now nested inside Tech Overview) -->
+                    <div class="card mt-4">
+                        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                            <span>Tech & Vendor Tags</span>
+                            <button class="btn btn-sm btn-link p-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#tagCloudCollapse" aria-expanded="true" aria-controls="tagCloudCollapse">
+                                <i class="bi bi-chevron-up fs-5" id="tagCloudCollapseIcon"></i>
+                            </button>
+                        </div>
+                        <div class="collapse show" id="tagCloudCollapse">
+                            <div class="card-body">
+                                <p class="text-muted mb-3">Click on a tag to filter entries. The size of each tag represents how frequently it appears in technology responses.</p>
+                                <div id="emerging-tech-tag-cloud" class="p-3" style="min-height: 150px;"></div>
+                                <div class="mt-3">
+                                    <button id="clearTagFilter" class="btn btn-sm btn-outline-primary" style="display: none;">Clear Tag Filter</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tech entries container (now nested inside Tech Overview) -->
+                    <div class="mt-4" id="techEntriesWrapper">
+                        <h5 class="mb-3">Technology & Vendor Feedback Entries</h5>
+                        <div class="row" id="techEntriesContainer">
+                            <!-- Tech entries cards will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Common Keywords panel (now nested inside Tech Overview) -->
+                    <div class="card mt-4">
+                        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                            <span>Common Keywords</span>
+                            <button class="btn btn-sm btn-link p-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#techKeywordsChartCollapse" aria-expanded="true" aria-controls="techKeywordsChartCollapse">
+                                <i class="bi bi-chevron-up fs-5" id="techKeywordsChartCollapseIcon"></i>
+                            </button>
+                        </div>
+                        <div class="collapse show" id="techKeywordsChartCollapse">
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="techKeywordsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>All Technology Trends by Interest Level</span>
+                <button class="btn btn-sm btn-link p-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#allTrendsCollapse" aria-expanded="true" aria-controls="allTrendsCollapse">
+                    <i class="bi bi-chevron-up fs-5" id="allTrendsCollapseIcon"></i>
+                </button>
+            </div>
+            <div class="collapse show" id="allTrendsCollapse">
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:600px;">
+                        <canvas id="allTrendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

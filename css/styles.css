@@ -1,0 +1,93 @@
+/* Main Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+/* Header Styles */
+header {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Styles */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: bold;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 20px;
+}
+
+/* Table Styles */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.table th {
+    background-color: #f8f9fa;
+}
+
+/* Interest Level Badges */
+.badge-interest {
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-weight: normal;
+}
+
+.badge-none {
+    background-color: #e9ecef;
+    color: #6c757d;
+}
+
+.badge-vague {
+    background-color: #cff4fc;
+    color: #055160;
+}
+
+.badge-reasonable {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.badge-strong {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+/* Tab Navigation */
+.nav-tabs .nav-link {
+    color: #495057;
+    border-radius: 0;
+    padding: 10px 20px;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: bold;
+    border-bottom: 3px solid #0d6efd;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+    }
+}

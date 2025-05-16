@@ -1,0 +1,157 @@
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                Survey Summary
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="card-title">Survey Statistics</h5>
+                        <p class="card-text">Total Responses: <strong id="total-responses"></strong></p>
+                        <p class="card-text">Companies Represented: <strong id="companies-count"></strong></p>
+                        <p class="card-text">Survey Period: <strong id="survey-period"></strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h5>About This Dashboard</h5>
+                            <p>This dashboard presents insights from the Brightspots & Whitespots survey data. Use the tabs to explore different aspects of the data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Top Customer Themes & Business Challenges
+            </div>
+            <div class="card-body">
+                <div class="list-group" id="top-challenges-list">
+                    <!-- Challenge items will be inserted here -->
+                </div>
+                <div class="mt-3 text-end">
+                    <button class="btn btn-sm btn-outline-primary" id="view-all-challenges-btn">
+                        View All Challenges
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Top Emerging Trends
+            </div>
+            <div class="card-body">
+                <div class="list-group" id="top-trends-list">
+                    <!-- Trend items will be inserted here -->
+                </div>
+                <div class="mt-3 text-end">
+                    <button class="btn btn-sm btn-outline-primary" id="view-all-trends-btn">
+                        View All Emerging Trends
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Top Products & Vendors
+            </div>
+            <div class="card-body">
+                <div class="list-group" id="top-vendors-list">
+                    <!-- Vendor items will be inserted here -->
+                </div>
+                <div class="mt-3 text-end">
+                    <button class="btn btn-sm btn-outline-primary" id="view-all-vendors-btn">
+                        View All Products & Vendors
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Customer Theme Tags Cloud</span>
+                <button class="btn btn-sm btn-link p-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#overviewTagCloudCollapse" aria-expanded="true" aria-controls="overviewTagCloudCollapse">
+                    <i class="bi bi-chevron-up fs-5" id="overviewTagCloudCollapseIcon"></i>
+                </button>
+            </div>
+            <div class="collapse show" id="overviewTagCloudCollapse">
+                <div class="card-body">
+                    <p class="text-muted mb-3">The most frequently mentioned topics in customer themes. Hover over a tag to see which companies mentioned it, click on a tag to view related entries.</p>
+                    <div id="tag-cloud" class="p-3" style="min-height: 250px;"></div>
+                    <div id="tag-companies" class="mt-3 p-2 bg-light rounded" style="display: none;">
+                        <h6 class="mb-2">Companies mentioning <span id="selected-tag"></span>:</h6>
+                        <div id="companies-list" class="small"></div>
+                        <div class="mt-2">
+                            <button id="mark-tag-for-removal" class="btn btn-sm btn-outline-danger">Mark for removal</button>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h6>Tags Marked for Removal</h6>
+                        <div id="tags-to-remove" class="p-2 border rounded">
+                            <p class="text-muted small mb-2">Tags marked for removal will be listed here. This is for data cleaning purposes.</p>
+                            <div id="removal-tag-list" class="d-flex flex-wrap gap-2"></div>
+                        </div>
+                        <div class="mt-2">
+                            <button id="copy-tags-to-clipboard" class="btn btn-sm btn-outline-secondary">Copy as JSON Array</button>
+                            <button id="clear-tags-to-remove" class="btn btn-sm btn-outline-danger ms-2">Clear All</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Emerging Tech & Vendor Tags Cloud</span>
+                <button class="btn btn-sm btn-link p-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#techTagCloudCollapse" aria-expanded="true" aria-controls="techTagCloudCollapse">
+                    <i class="bi bi-chevron-up fs-5" id="techTagCloudCollapseIcon"></i>
+                </button>
+            </div>
+            <div class="collapse show" id="techTagCloudCollapse">
+                <div class="card-body">
+                    <p class="text-muted mb-3">The most frequently mentioned technologies, vendors and products. Hover over a tag to see which companies mentioned it, click on a tag to view related entries.</p>
+                    <div id="tech-tag-cloud" class="p-3" style="min-height: 250px;"></div>
+                    <div id="tech-tag-companies" class="mt-3 p-2 bg-light rounded" style="display: none;">
+                        <h6 class="mb-2">Companies mentioning <span id="selected-tech-tag"></span>:</h6>
+                        <div id="tech-companies-list" class="small"></div>
+                        <div class="mt-2">
+                            <button id="mark-tech-tag-for-removal" class="btn btn-sm btn-outline-danger">Mark for removal</button>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h6>Tech Tags Marked for Removal</h6>
+                        <div id="tech-tags-to-remove" class="p-2 border rounded">
+                            <p class="text-muted small mb-2">Tech tags marked for removal will be listed here. This is for data cleaning purposes.</p>
+                            <div id="tech-removal-tag-list" class="d-flex flex-wrap gap-2"></div>
+                        </div>
+                        <div class="mt-2">
+                            <button id="copy-tech-tags-to-clipboard" class="btn btn-sm btn-outline-secondary">Copy as JSON Array</button>
+                            <button id="clear-tech-tags-to-remove" class="btn btn-sm btn-outline-danger ms-2">Clear All</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
