@@ -2,3 +2,5 @@ data/brightspots.csv
 data/brightspots-original.csv
 data/brightspots.json
 data/brightspots copy.json
+scripts/node_modules
+data/brightspots original.json

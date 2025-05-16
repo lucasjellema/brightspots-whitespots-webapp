@@ -1,5 +1,5 @@
 // Companies Tab Module
-import { getCompanies, getProductsVendors } from '../../dataService.js';
+import { getSurveyData } from '../../dataService.js';
 
 /**
  * Load the companies tab content
@@ -19,80 +19,25 @@ export async function loadCompaniesContent() {
         const templateHtml = await response.text();
         container.innerHTML = templateHtml;
         
-        // Get data
-        const companies = getCompanies();
-        const productsVendors = getProductsVendors();
+        // Get survey data
+        const surveyData = getSurveyData();
         
-        // Update company statistics
-        document.getElementById('total-companies').textContent = companies.length;
-        const totalRespondents = companies.reduce((sum, company) => sum + company.count, 0);
-        document.getElementById('total-respondents').textContent = totalRespondents;
-        document.getElementById('avg-respondents').textContent = (totalRespondents / companies.length).toFixed(1);
+        // Process data to group by companies (only records without a role)
+        const companiesData = processCompaniesData(surveyData);
         
-        // Populate top companies list
-        const topCompaniesList = document.getElementById('top-companies-list');
-        topCompaniesList.innerHTML = companies.slice(0, 5).map(company => `
-            <li><strong>${company.name}</strong> - ${company.count} respondent${company.count !== 1 ? 's' : ''}</li>
-        `).join('');
+        // Populate company selector
+        populateCompanySelector(companiesData);
         
-        // Populate companies accordion
-        const companiesAccordion = document.getElementById('companiesAccordion');
-        companiesAccordion.innerHTML = companies.map((company, index) => `
-            <div class="accordion-item company-item">
-                <h2 class="accordion-header" id="heading${index}">
-                    <button class="accordion-button ${index !== 0 ? 'collapsed' : ''}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="collapse${index}">
-                        <div class="d-flex justify-content-between align-items-center w-100 me-3">
-                            <span>${company.name}</span>
-                            <span class="badge bg-primary rounded-pill">${company.count} respondent${company.count !== 1 ? 's' : ''}</span>
-                        </div>
-                    </button>
-                </h2>
-                <div id="collapse${index}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" aria-labelledby="heading${index}" data-bs-parent="#companiesAccordion">
-                    <div class="accordion-body">
-                        <h6>Respondents:</h6>
-                        <ul class="list-group mb-3">
-                            ${company.respondents.map(respondent => `
-                                <li class="list-group-item">
-                                    <div class="fw-bold">${respondent.name}</div>
-                                    ${respondent.themes ? `
-                                        <div class="mt-2">
-                                            <strong>Customer Themes:</strong>
-                                            <p class="text-muted small">${respondent.themes}</p>
-                                        </div>
-                                    ` : ''}
-                                    ${respondent.emergingTech ? `
-                                        <div class="mt-2">
-                                            <strong>Emerging Tech/Vendor/Product:</strong>
-                                            <p class="text-muted small">${respondent.emergingTech}</p>
-                                        </div>
-                                    ` : ''}
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-        
-        // Populate vendors table
-        const vendorsTableBody = document.getElementById('vendorsTableBody');
-        vendorsTableBody.innerHTML = productsVendors.map(vendor => `
-            <tr class="vendor-row">
-                <td>${vendor.vendor}</td>
-                <td>${vendor.interestCounts['Niets over gehoord']}</td>
-                <td>${vendor.interestCounts['Vage interesse']}</td>
-                <td>${vendor.interestCounts['Redelijke interesse']}</td>
-                <td>${vendor.interestCounts['Sterke, concrete interesse']}</td>
-                <td><strong>${vendor.weightedScore.toFixed(2)}</strong></td>
-            </tr>
-        `).join('');
-        
-        // Initialize search functionality
-        initializeSearch();
-        
-        // Create charts
-        createCompaniesChart(companies);
-        createTopVendorsChart(productsVendors.slice(0, 10));
+        // Add event listener for company selection
+        document.getElementById('companySelector').addEventListener('change', (event) => {
+            const selectedCompany = event.target.value;
+            if (selectedCompany) {
+                displayCompanyDetails(companiesData[selectedCompany]);
+            } else {
+                // Hide details section if no company is selected
+                document.getElementById('companyDetailsSection').style.display = 'none';
+            }
+        });
         
     } catch (error) {
         console.error('Error loading companies content:', error);
@@ -100,186 +45,231 @@ export async function loadCompaniesContent() {
 }
 
 /**
- * Initialize search functionality
+ * Process survey data to group by companies
+ * Only consider records without a role specified
  */
-function initializeSearch() {
-    // Company search
-    const companySearchInput = document.getElementById('companySearch');
-    const companySearchBtn = document.getElementById('companySearchBtn');
-    const companyItems = document.querySelectorAll('.company-item');
+function processCompaniesData(surveyData) {
+    const companiesMap = {};
     
-    const performCompanySearch = () => {
-        const searchTerm = companySearchInput.value.toLowerCase();
+    // Filter records without a role
+    const filteredData = surveyData.filter(entry => !entry.Rol || entry.Rol.trim() === '');
+    
+    filteredData.forEach(entry => {
+        const companyName = entry['Jouw bedrijf'];
+        if (!companyName || companyName.trim() === '') return;
         
-        companyItems.forEach(item => {
-            const companyName = item.querySelector('.accordion-button span').textContent.toLowerCase();
-            const respondents = Array.from(item.querySelectorAll('.list-group-item')).map(li => li.textContent.toLowerCase());
-            
-            const matchesCompany = companyName.includes(searchTerm);
-            const matchesRespondent = respondents.some(text => text.includes(searchTerm));
-            
-            if (matchesCompany || matchesRespondent) {
-                item.style.display = '';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    };
-    
-    if (companySearchBtn) {
-        companySearchBtn.addEventListener('click', performCompanySearch);
-    }
-    
-    if (companySearchInput) {
-        companySearchInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') {
-                performCompanySearch();
-            }
-        });
-    }
-    
-    // Vendor search
-    const vendorSearchInput = document.getElementById('vendorSearch');
-    const vendorSearchBtn = document.getElementById('vendorSearchBtn');
-    const vendorRows = document.querySelectorAll('.vendor-row');
-    
-    const performVendorSearch = () => {
-        const searchTerm = vendorSearchInput.value.toLowerCase();
+        if (!companiesMap[companyName]) {
+            companiesMap[companyName] = {
+                name: companyName,
+                contributors: [],
+                customerThemes: [],
+                emergingTech: [],
+                challenges: {},
+                techConcepts: {},
+                productsVendors: {}
+            };
+        }
         
-        vendorRows.forEach(row => {
-            const vendor = row.querySelector('td:first-child').textContent.toLowerCase();
-            
-            if (vendor.includes(searchTerm)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    };
+        // Add contributor
+        if (entry['Jouw naam'] && entry['Jouw naam'].trim() !== '') {
+            companiesMap[companyName].contributors.push(entry['Jouw naam']);
+        }
+        
+        // Add customer themes
+        if (entry.newCustomerThemes && entry.newCustomerThemes.trim() !== '') {
+            companiesMap[companyName].customerThemes.push(entry.newCustomerThemes);
+        }
+        
+        // Add emerging tech
+        if (entry.emergingTechVendorProduct && entry.emergingTechVendorProduct.trim() !== '') {
+            companiesMap[companyName].emergingTech.push(entry.emergingTechVendorProduct);
+        }
+        
+        // Process challenges
+        if (entry.challenges) {
+            Object.entries(entry.challenges).forEach(([challenge, interestLevel]) => {
+                if (!interestLevel || interestLevel.trim() === '') return;
+                
+                const currentInterest = companiesMap[companyName].challenges[challenge];
+                if (!currentInterest || getInterestScore(interestLevel) > getInterestScore(currentInterest)) {
+                    companiesMap[companyName].challenges[challenge] = interestLevel;
+                }
+            });
+        }
+        
+        // Process tech concepts
+        if (entry.techConcepts) {
+            Object.entries(entry.techConcepts).forEach(([concept, interestLevel]) => {
+                if (!interestLevel || interestLevel.trim() === '') return;
+                
+                const currentInterest = companiesMap[companyName].techConcepts[concept];
+                if (!currentInterest || getInterestScore(interestLevel) > getInterestScore(currentInterest)) {
+                    companiesMap[companyName].techConcepts[concept] = interestLevel;
+                }
+            });
+        }
+        
+        // Process products/vendors
+        if (entry.productsVendors) {
+            Object.entries(entry.productsVendors).forEach(([vendor, interestLevel]) => {
+                if (!interestLevel || interestLevel.trim() === '') return;
+                
+                const currentInterest = companiesMap[companyName].productsVendors[vendor];
+                if (!currentInterest || getInterestScore(interestLevel) > getInterestScore(currentInterest)) {
+                    companiesMap[companyName].productsVendors[vendor] = interestLevel;
+                }
+            });
+        }
+    });
     
-    if (vendorSearchBtn) {
-        vendorSearchBtn.addEventListener('click', performVendorSearch);
-    }
-    
-    if (vendorSearchInput) {
-        vendorSearchInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') {
-                performVendorSearch();
-            }
-        });
+    return companiesMap;
+}
+
+/**
+ * Get numeric score for interest level
+ */
+function getInterestScore(interestLevel) {
+    switch (interestLevel) {
+        case 'Sterke, concrete interesse': return 3;
+        case 'Redelijke interesse': return 2;
+        case 'Vage interesse': return 1;
+        case 'Niets over gehoord': return 0;
+        default: return -1;
     }
 }
 
 /**
- * Create a chart showing companies by number of respondents
+ * Get interest level badge HTML
  */
-function createCompaniesChart(companies) {
-    const ctx = document.getElementById('companiesChart');
+function getInterestBadge(interestLevel) {
+    let badgeClass = 'bg-secondary';
     
-    if (!ctx) return;
+    switch (interestLevel) {
+        case 'Sterke, concrete interesse':
+            badgeClass = 'bg-success';
+            break;
+        case 'Redelijke interesse':
+            badgeClass = 'bg-primary';
+            break;
+        case 'Vage interesse':
+            badgeClass = 'bg-warning';
+            break;
+        case 'Niets over gehoord':
+            badgeClass = 'bg-secondary';
+            break;
+    }
     
-    // Take top 10 companies by respondent count
-    const topCompanies = companies.slice(0, 10);
+    return `<span class="badge ${badgeClass}">${interestLevel}</span>`;
+}
+
+/**
+ * Populate company selector dropdown
+ */
+function populateCompanySelector(companiesData) {
+    const selector = document.getElementById('companySelector');
     
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: topCompanies.map(company => company.name),
-            datasets: [{
-                label: 'Number of Respondents',
-                data: topCompanies.map(company => company.count),
-                backgroundColor: 'rgba(13, 110, 253, 0.7)',
-                borderColor: 'rgba(13, 110, 253, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Respondents'
-                    }
-                }
-            }
-        }
+    // Sort companies alphabetically
+    const sortedCompanies = Object.values(companiesData).sort((a, b) => a.name.localeCompare(b.name));
+    
+    sortedCompanies.forEach(company => {
+        const option = document.createElement('option');
+        option.value = company.name;
+        option.textContent = `${company.name} (${company.contributors.length} contributor${company.contributors.length !== 1 ? 's' : ''})`;
+        selector.appendChild(option);
     });
 }
 
 /**
- * Create a chart showing top products/vendors
+ * Display company details
  */
-function createTopVendorsChart(vendors) {
-    const ctx = document.getElementById('topVendorsChart');
+function displayCompanyDetails(companyData) {
+    // Show details section
+    document.getElementById('companyDetailsSection').style.display = 'block';
     
-    if (!ctx) return;
+    // Set company name
+    document.getElementById('companyName').textContent = companyData.name;
     
-    const labels = vendors.map(vendor => vendor.vendor);
-    const strongInterest = vendors.map(vendor => vendor.interestCounts['Sterke, concrete interesse']);
-    const reasonableInterest = vendors.map(vendor => vendor.interestCounts['Redelijke interesse']);
-    const vagueInterest = vendors.map(vendor => vendor.interestCounts['Vage interesse']);
-    const noInterest = vendors.map(vendor => vendor.interestCounts['Niets over gehoord']);
+    // Populate contributors list
+    const contributorsList = document.getElementById('contributorsList');
+    contributorsList.innerHTML = '';
     
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Strong Interest',
-                    data: strongInterest,
-                    backgroundColor: '#d1e7dd',
-                    borderColor: '#0f5132',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Reasonable Interest',
-                    data: reasonableInterest,
-                    backgroundColor: '#fff3cd',
-                    borderColor: '#664d03',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Vague Interest',
-                    data: vagueInterest,
-                    backgroundColor: '#cff4fc',
-                    borderColor: '#055160',
-                    borderWidth: 1
-                },
-                {
-                    label: 'No Interest',
-                    data: noInterest,
-                    backgroundColor: '#e9ecef',
-                    borderColor: '#6c757d',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    stacked: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Responses'
-                    }
-                },
-                y: {
-                    stacked: true
-                }
-            }
-        }
+    if (companyData.contributors.length > 0) {
+        companyData.contributors.forEach(contributor => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = contributor;
+            contributorsList.appendChild(li);
+        });
+    } else {
+        const li = document.createElement('li');
+        li.className = 'list-group-item text-muted';
+        li.textContent = 'Anonymous contributors';
+        contributorsList.appendChild(li);
+    }
+    
+    // Populate customer themes
+    const customerThemesText = document.getElementById('customerThemesText');
+    if (companyData.customerThemes.length > 0) {
+        customerThemesText.innerHTML = companyData.customerThemes.map(theme => 
+            `<p>${theme}</p>`
+        ).join('<hr class="my-2">');
+    } else {
+        customerThemesText.textContent = 'No customer themes provided.';
+    }
+    
+    // Populate emerging tech
+    const emergingTechText = document.getElementById('emergingTechText');
+    if (companyData.emergingTech.length > 0) {
+        emergingTechText.innerHTML = companyData.emergingTech.map(tech => 
+            `<p>${tech}</p>`
+        ).join('<hr class="my-2">');
+    } else {
+        emergingTechText.textContent = 'No emerging tech information provided.';
+    }
+    
+    // Populate challenges table
+    populateInterestTable('challengesTableBody', companyData.challenges);
+    
+    // Populate tech concepts table
+    populateInterestTable('techConceptsTableBody', companyData.techConcepts);
+    
+    // Populate products/vendors table
+    populateInterestTable('productsVendorsTableBody', companyData.productsVendors);
+}
+
+/**
+ * Populate an interest table with data
+ */
+function populateInterestTable(tableId, data) {
+    const tableBody = document.getElementById(tableId);
+    tableBody.innerHTML = '';
+    
+    // Sort entries by interest level (highest first)
+    const sortedEntries = Object.entries(data).sort((a, b) => {
+        return getInterestScore(b[1]) - getInterestScore(a[1]);
     });
+    
+    if (sortedEntries.length > 0) {
+        sortedEntries.forEach(([item, interestLevel]) => {
+            const row = document.createElement('tr');
+            
+            const itemCell = document.createElement('td');
+            itemCell.textContent = item;
+            row.appendChild(itemCell);
+            
+            const interestCell = document.createElement('td');
+            interestCell.innerHTML = getInterestBadge(interestLevel);
+            row.appendChild(interestCell);
+            
+            tableBody.appendChild(row);
+        });
+    } else {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 2;
+        cell.className = 'text-center text-muted';
+        cell.textContent = 'No data available';
+        row.appendChild(cell);
+        tableBody.appendChild(row);
+    }
 }
