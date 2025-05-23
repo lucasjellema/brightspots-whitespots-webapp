@@ -1,12 +1,12 @@
 // Data Service for Brightspots & Whitespots Dashboard
 let surveyData = [];
-
-// Store interest details for companies
+let themesData = [];
 let interestDetails = {
     challenges: {},
     techConcepts: {},
     productsVendors: {}
 };
+let themeAssessments = {};
 
 /**
  * Load survey data from the JSON file or from a URL specified in the parDataFile query parameter
@@ -25,10 +25,30 @@ export async function loadSurveyData() {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json();
-        surveyData = data;
-        console.log('Survey data loaded successfully:', surveyData.length, 'entries');
-        return data;
+        
+        // Parse the JSON response
+        const loadedData = await response.json();
+        
+        // Check if the data is in the new format (with surveyData and themeAssessments)
+        if (loadedData.surveyData && Array.isArray(loadedData.surveyData)) {
+            // Set the survey data
+            surveyData = loadedData.surveyData;
+            console.log('Survey data loaded successfully:', surveyData.length, 'entries');
+            
+            // Check if there are theme assessments and set them
+            if (loadedData.themeAssessments) {
+                themeAssessments = loadedData.themeAssessments;
+                console.log('Theme assessments loaded successfully for', Object.keys(themeAssessments).length, 'companies');
+            }
+        } else if (Array.isArray(loadedData)) {
+            // Handle the legacy format (just an array of survey data)
+            surveyData = loadedData;
+            console.log('Survey data loaded successfully (legacy format):', surveyData.length, 'entries');
+        } else {
+            throw new Error('Invalid data format: Expected an array or an object with surveyData property');
+        }
+        
+        return surveyData;
     } catch (error) {
         console.error('Error loading survey data:', error);
         throw error;
@@ -557,6 +577,86 @@ export function getCompanies() {
     
     return Array.from(companyMap.values())
         .sort((a, b) => b.count - a.count);
+}
+
+/**
+ * Find a record by its Id and return the record data
+ * @param {string} id - The Id of the record to find
+ * @returns {Object|null} - The record object or null if not found
+ */
+export function getRecordById(id) {
+    if (!id) return null;
+    
+    // Find the record with the matching Id
+    const record = surveyData.find(entry => entry.Id === id);
+    return record || null;
+}
+
+/**
+ * Load main themes data from JSON file
+ */
+export async function loadThemesData() {
+    try {
+        console.log('Fetching themes data from data/main-themes.json');
+        const response = await fetch('data/main-themes.json');
+        if (!response.ok) {
+            throw new Error(`Failed to load themes data: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        themesData = data; // Store in the module variable
+        console.log(`Loaded ${themesData.length} themes successfully:`, themesData);
+        return themesData;
+    } catch (error) {
+        console.error('Error loading themes data:', error);
+        // If there's an error, create some default themes for testing
+        themesData = [
+            {"Id":"1","Name":"AI", "Description":""},
+            {"Id":"2","Name":"Cyber Security", "Description":""},
+            {"Id":"3","Name":"IT Regulations", "Description":""}
+        ];
+        console.log('Using fallback themes data');
+        return themesData;
+    }
+}
+
+/**
+ * Get all main themes
+ */
+export function getThemesData() {
+    return themesData;
+}
+
+/**
+ * Get theme assessments for a company
+ * @param {string} companyName - The company name
+ */
+export function getThemeAssessments(companyName) {
+    if (!themeAssessments[companyName]) {
+        return {};
+    }
+    return themeAssessments[companyName];
+}
+
+/**
+ * Get all theme assessments
+ * @returns {Object} All theme assessments
+ */
+export function getAllThemeAssessments() {
+    return themeAssessments;
+}
+
+/**
+ * Save theme assessments for a company
+ * @param {string} companyName - The company name
+ * @param {Object} assessments - The theme assessments to save
+ */
+export function saveThemeAssessments(companyName, assessments) {
+    if (!companyName) return false;
+    
+    themeAssessments[companyName] = assessments;
+    console.log(`Saved theme assessments for ${companyName}`);
+    return true;
 }
 
 /**

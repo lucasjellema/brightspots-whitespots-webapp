@@ -1,0 +1,12 @@
+{
+  "name": "brightspots-mock-data-generator",
+  "version": "1.0.0",
+  "description": "Script to generate anonymized mock data for brightspots.json",
+  "main": "generate-mock-data.js",
+  "scripts": {
+    "generate": "node generate-mock-data.js"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.0.2"
+  }
+}

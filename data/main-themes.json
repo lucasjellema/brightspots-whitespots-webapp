@@ -1,0 +1,21 @@
+[{"Id":"1","Name":"AI", "Description":""}
+,{"Id":"2","Name":"Cyber Security", "Description":""}
+,{"Id":"3","Name":"IT Regulations, Legislation, Compliance", "Description":""}
+,{"Id":"4","Name":"Automation of IT (IaC)", "Description":""}
+,{"Id":"5","Name":"Identity Management / eIDAS", "Description":""}
+,{"Id":"6","Name":"Adoption of Generative AI for internal organization", "Description":""}
+,{"Id":"9","Name":"Enterprise Architecture", "Description":""}
+,{"Id":"10","Name":"eCommerce & Omni/MultiChannel", "Description":""}
+,{"Id":"11","Name":"ERP upgrade/evolution/replacement", "Description":""}
+,{"Id":"12","Name":"Legacy Systems & Technical Debt", "Description":""}
+,{"Id":"13","Name":"IT Cost Management", "Description":""}
+,{"Id":"14","Name":"Biodiversity", "Description":""}
+,{"Id":"15","Name":"Green IT, CSRD & ESG", "Description":""}
+,{"Id":"16","Name":"Zero Trust", "Description":""}
+,{"Id":"17","Name":"IT Architecture", "Description":""}
+,{"Id":"18","Name":"Cloud (move to, move from, sovereign/EU, multicloud, hybrid)", "Description":""}
+,{"Id":"19","Name":"Observability", "Description":""}
+,{"Id":"20","Name":"Data Governance", "Description":""}
+,{"Id":"21","Name":"Risk Analysis & Management", "Description":""}
+,{"Id":"22","Name":"IT Resilience & Business Continuity", "Description":""}
+]

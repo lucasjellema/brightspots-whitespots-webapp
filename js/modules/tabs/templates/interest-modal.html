@@ -1,0 +1,79 @@
+<!-- Interest Details Modal -->
+<div class="modal fade" id="interestDetailsModal" tabindex="-1" aria-labelledby="interestDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="interestDetailsModalLabel">Record Interest Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="detailsCompany" name="company">
+                <input type="hidden" id="detailsCategory" name="category">
+                <input type="hidden" id="detailsTopic" name="topic">
+                
+                <!-- Existing Records Section -->
+                <div id="existingRecordsSection" class="mb-4">
+                    <h6>Existing Customer Interest Records</h6>
+                    <div id="existingRecordsList" class="list-group mb-3">
+                        <!-- Existing records will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Add New Record Section -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Add New Customer Interest Record</h6>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="clearFormBtn">
+                            <i class="bi bi-x-circle"></i> Clear Form
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <form id="interestDetailsForm">
+                            <div class="mb-3">
+                                <label for="detailsWhere" class="form-label">Which customer expressed interest?</label>
+                                <input type="text" class="form-control" id="detailsWhere" name="where" required>
+                                <div class="form-text">Specify the customer who expressed interest</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="detailsWhen" class="form-label">When was interest observed?</label>
+                                <input type="text" class="form-control" id="detailsWhen" name="when" placeholder="Month Year (e.g., May 2025)" required>
+                                <div class="form-text">Specify the month and year when interest was observed</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="detailsWhat" class="form-label">What specific interest was expressed?</label>
+                                <textarea class="form-control" id="detailsWhat" name="what" rows="3" required></textarea>
+                                <div class="form-text">Describe the specific interest that was expressed</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="detailsFrom" class="form-label">From whom was interest observed?</label>
+                                <input type="text" class="form-control" id="detailsFrom" name="from">
+                                <div class="form-text">Name or role of the person who expressed interest</div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-success" id="addRecordBtn">
+                                <i class="bi bi-plus-circle"></i> Add This Record
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Records to Save Section -->
+                <div id="recordsToSaveSection" class="mb-4" style="display: none;">
+                    <h6>New Records to Save</h6>
+                    <div id="recordsToSaveList" class="list-group mb-3">
+                        <!-- New records will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveInterestDetailsBtn">
+                    <i class="bi bi-save"></i> Save All Records
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

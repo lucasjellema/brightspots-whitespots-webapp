@@ -1,17 +1,21 @@
 # Brightspots & Whitespots Dashboard
 
-A web-based dashboard application for visualizing and exploring survey data related to business challenges, technology trends, and product vendors.
+A web-based dashboard application for visualizing and exploring survey data related to business challenges, technology trends, product vendors, and technology themes.
 
 ## Overview
 
-The Brightspots & Whitespots Dashboard is a Single Page Application (SPA) designed to present insights from survey data through interactive visualizations and organized content. It helps users identify "bright spots" (successful areas) and "white spots" (opportunity areas) in the technology and business landscape.
+The Brightspots & Whitespots Dashboard is a Single Page Application (SPA) designed to present insights from survey data through interactive visualizations and organized content. It helps users identify "bright spots" (successful areas) and "white spots" (opportunity areas) in the technology and business landscape, with comprehensive theme assessment capabilities.
 
 ## Features
 
 - **Interactive Dashboard**: Tab-based navigation for exploring different aspects of the survey data
 - **Data Visualization**: Charts and graphs to visualize survey results and trends
+- **Theme Assessment**: Comprehensive system for evaluating company involvement with key technology themes
+- **Interest Details**: Track and manage detailed information about company interests in challenges, technologies, and vendors
 - **Responsive Design**: Built with Bootstrap for optimal viewing on any device
 - **Modular Architecture**: Clean separation of concerns for easy maintenance and extensibility
+- **Flexible Data Loading**: Support for both local and remote data sources
+- **Admin & UUID Modes**: Granular permission system for viewing and editing data
 
 ## Project Structure
 
@@ -24,14 +28,20 @@ project-root/
 │   ├── main.js                # Application initialization
 │   ├── dataService.js         # Centralized data handling
 │   └── modules/               # Modular components
-│       ├── chartService.js    # Chart creation utilities (optional)
-│       ├── uiHelpers.js       # UI utility functions (optional)
+│       ├── chartService.js    # Chart creation utilities
+│       ├── uiHelpers.js       # UI utility functions
 │       └── tabs/              # Tab-specific modules
-│           ├── overviewTab.js # Overview tab logic
-│           ├── customerThemesTab.js # Customer themes tab logic
+│           ├── overviewTab.js         # Overview tab logic
+│           ├── customerThemesTab.js   # Customer themes tab logic
 │           ├── technologyTrendsTab.js # Technology trends tab logic
-│           └── companiesTab.js # Companies tab logic
+│           ├── companiesTab.js        # Companies tab logic
+│           ├── templates/              # HTML templates for tabs
+│           │   ├── companies.html         # Companies tab template
+│           │   ├── interest-modal.html    # Interest details modal template
+│           │   └── theme-assessment-modal.html # Theme assessment modal template
 └── data/                      # Application data files
+    ├── brightspots.json       # Main survey data
+    └── main-themes.json       # Theme definitions for assessment
 ```
 
 ## Technologies Used
@@ -97,12 +107,76 @@ Then open `http://localhost:8000` in your browser.
 
 The application supports two methods for loading data:
 
-1. **Default Local Data**: By default, the application loads data from the local `data/brightspots.json` file
+1. **Default Local Data**: By default, the application loads data from the local files:
+   - Survey data from `data/brightspots.json`
+   - Theme definitions from `data/main-themes.json`
+   
 2. **External Data Source**: You can specify an external data source by adding the `parDataFile` query parameter to the URL
 
 Example URL with external data source:
 ```
 http://localhost:8000/index.html?parDataFile=https://example.com/path/to/data.json
+```
+
+The data structure in both local and external sources should follow this format:
+```json
+{
+  "surveyData": [ ... ],  // Array of survey records
+  "themeAssessments": { ... }  // Object containing theme assessments by company
+}
+```
+
+### Admin Mode
+
+The application includes an admin mode that enables additional functionality:
+
+1. **Data Download**: When admin mode is enabled, a download button appears in the header, allowing you to download the current dataset as a JSON file
+2. **Record Management**: Admin mode supports adding new records and editing existing records in the system
+   - Add interest details for companies related to challenges, technology concepts, and products/vendors
+   - Edit and update existing records with new information
+   - All changes can be saved and downloaded as part of the dataset
+3. **Theme Assessment**: Admin mode enables comprehensive theme assessment capabilities
+   - Assess company involvement with technology themes using a four-level scale:
+     * Fully claimed (green)
+     * Somewhat associated (blue)
+     * It's our ambition (yellow)
+     * Not for us (red)
+   - Add detailed descriptions for each theme assessment
+   - View theme assessments in a collapsible panel with color-coded indicators
+   - Theme assessments are included in the downloaded dataset
+
+To enable admin mode, add the `adminMode=yes` query parameter to the URL:
+```
+http://localhost:8000/index.html?adminMode=yes
+```
+
+### Record-Specific Editing with UUID
+
+The application provides a specialized mode for accessing and editing records for a specific company using a record's unique identifier:
+
+1. **Direct Company Access**: When the `uuid` parameter is provided, the application automatically navigates to the Companies tab and selects the company associated with that record ID
+2. **Targeted Editing Permissions**: For the selected company only, users can:
+   - Add and edit interest details (challenges, technology concepts, products/vendors) 
+   - Perform theme assessments using the same interface available in admin mode
+   - Save changes that will be included in the downloaded dataset
+3. **Preserved Security**: Other companies remain in read-only mode unless admin mode is active
+4. **Theme Assessment Display**: Theme assessments are visible to all users, but can only be edited in admin mode or UUID mode
+
+To access a specific company in edit mode, add the `uuid` query parameter with a record ID value:
+```
+http://localhost:8000/index.html?uuid=46
+```
+
+### Combining Query Parameters
+
+You can combine multiple query parameters as needed:
+```
+http://localhost:8000/index.html?parDataFile=https://example.com/path/to/data.json&adminMode=yes
+```
+
+Or:
+```
+http://localhost:8000/index.html?parDataFile=https://example.com/path/to/data.json&uuid=46
 ```
 
 ## Extending the Application

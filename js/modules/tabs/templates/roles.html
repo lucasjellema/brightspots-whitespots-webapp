@@ -2,17 +2,17 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header">
-                <h5>Companies</h5>
-                <p class="text-muted">Select a company to view detailed information about their responses.</p>
+                <h5>People</h5>
+                <p class="text-muted">Select a person to view their detailed survey responses.</p>
             </div>
             <div class="card-body">
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label for="companySelector" class="form-label">Select a company:</label>
-                            <select class="form-select" id="companySelector">
-                                <option value="" selected>-- Select a company --</option>
-                                <!-- Company options will be populated dynamically -->
+                            <label for="personSelector" class="form-label">Select a person:</label>
+                            <select class="form-select" id="personSelector">
+                                <option value="" selected>-- Select a person --</option>
+                                <!-- Person options will be populated dynamically -->
                             </select>
                         </div>
                     </div>
@@ -22,21 +22,15 @@
     </div>
 </div>
 
-<!-- Company Details Section (hidden by default) -->
-<div id="companyDetailsSection" class="row mb-4" style="display: none;">
+<!-- Person Details Section (hidden by default) -->
+<div id="personDetailsSection" class="row mb-4" style="display: none;">
     <div class="col-md-12">
         <div class="card">
             <div class="card-header">
-                <h5 id="companyName">Company Details</h5>
+                <h5 id="personName">Person Details</h5>
+                <p class="text-muted" id="personInfo">Role and Company information</p>
             </div>
             <div class="card-body">
-                <!-- Contributors Section -->
-                <div class="mb-4">
-                    <h6>Contributors</h6>
-                    <ul id="contributorsList" class="list-group">
-                        <!-- Contributors will be populated dynamically -->
-                    </ul>
-                </div>
 
                 <!-- Free Text Sections -->
                 <div class="row mb-4">
@@ -61,42 +55,6 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Theme Assessment Section (Collapsible) -->
-                <div id="themeAssessmentSection" class="mb-4" style="display: none;">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <!-- Separate the collapse toggle from the edit button to prevent conflicts -->
-                            <div class="d-flex align-items-center" 
-                                 data-bs-toggle="collapse" href="#themeAssessmentCollapse" role="button" 
-                                 aria-expanded="false" aria-controls="themeAssessmentCollapse">
-                                <h5 class="mb-0">
-                                    Theme Assessment
-                                    <i id="themeAssessmentCollapseIcon" class="bi bi-chevron-down ms-2"></i>
-                                </h5>
-                            </div>
-                            <!-- Edit button is now outside the collapsible area -->
-                            <button id="editThemeAssessmentBtn" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-pencil"></i> Edit Assessment
-                            </button>
-                        </div>
-                        <div class="collapse" id="themeAssessmentCollapse">
-                            <div class="card-body p-2">
-                                <div id="themeAssessmentSummary" class="table-responsive">
-                                    <!-- Compact theme assessment summary will be populated here -->
-                                    <div class="text-center text-muted py-2">
-                                        <div class="spinner-border spinner-border-sm me-2" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                        Loading themes...
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Challenges Section -->
 
                 <!-- Challenges Section -->
                 <div class="mb-4">
@@ -107,7 +65,6 @@
                                 <tr>
                                     <th>Challenge</th>
                                     <th>Interest Level</th>
-                                    <th class="actions-column" id="challengesActionsHeader">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="challengesTableBody">
@@ -126,7 +83,6 @@
                                 <tr>
                                     <th>Tech Concept</th>
                                     <th>Interest Level</th>
-                                    <th class="actions-column" id="techConceptsActionsHeader">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="techConceptsTableBody">
@@ -145,7 +101,6 @@
                                 <tr>
                                     <th>Product/Vendor</th>
                                     <th>Interest Level</th>
-                                    <th class="actions-column" id="productsVendorsActionsHeader">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="productsVendorsTableBody">
