@@ -1,57 +1,91 @@
 # Bright Spots Survey Data
 
-## Remote Data Source
+## Data Structure Overview
 
-The remote data set is in the bucket https://cloud.oracle.com/object-storage/buckets/idtwlqf2hanz/laptop-extension-drive/objects?region=us-ashburn-1
+The `brightspots-mock.json` file contains survey response data structured as an array of JSON objects. Each object represents a single survey response with the following structure:
 
-A file called brightspots.csv is available in the bucket.
+### Metadata Fields
 
-The URL for accessing the web application (using a PAR to refer to the file):
+- `Id`: Unique identifier for the survey response
+- `Start time`: When the survey was started (format: DD-MM-YYYY HH:MM)
+- `Completion time`: When the survey was completed (format: DD-MM-YYYY HH:MM)
+- `Email`: Email address of respondent (usually "anonymous")
+- `Name`: Name field (usually empty)
 
-https://lucasjellema.github.io/brightspots/?datafilePAR=https://idtwlqf2hanz.objectstorage.us-ashburn-1.oci.customer-oci.com/p/Qw2oXM9mtGeGlnosZPUhxPD0Yvi74A0fMNC_UU_ppiMK-VH_NwUBg1HE2pQp1Une/n/idtwlqf2hanz/b/laptop-extension-drive/o/conclusion-assets/brightspots.csv
+### Respondent Information
 
-https://idtwlqf2hanz.objectstorage.us-ashburn-1.oci.customer-oci.com/p/tnYce_RmNWHwn60Bkd23Vdc1YEPYf4Fa6tdwZxsrNus1sd20WcJkoh3xpTVqxubl/n/idtwlqf2hanz/b/laptop-extension-drive/o/conclusion-assets/brightspots.csv
+- `Jouw naam`: Respondent's name
+- `Rol`: Respondent's role (e.g., CTO, Solution Architect, Software Engineer)
+- `Jouw bedrijf`: Respondent's company
 
-## CSV File Structure
+### Customer Themes
 
-The `brightspots.csv` file contains survey responses from various participants about customer challenges, emerging technologies, and products/suppliers. The file uses semicolon (`;`) as the delimiter.
+- `newCustomerThemes`: Free text describing customer themes or priorities (semicolon-separated)
+- `newCustomerThemesTags`: Array of tags categorizing the customer themes
 
-### Header Fields
+### Technology Implementation
 
-The CSV file contains the following header fields:
+- `emergingTechVendorProduct`: Free text describing technologies, vendors, and products with implementation stages and timeframes (semicolon-separated)
+- `emergingTechVendorProductTags`: Array of technology names extracted from the free text
 
-1. `Id` - Unique identifier for each survey response
-2. `Start time` - When the survey was started
-3. `Completion time` - When the survey was completed
-4. `Email` - Email address (anonymized)
-5. `Name` - Name field
-6. `Jouw naam` - Respondent's name
-7. `Jouw bedrijf` - Respondent's company
-8. `newCustomerThemes` - New customer themes mentioned
-9. `emergingTechVendorProduct` - Emerging technologies, vendors, or products
-10. Multiple challenge fields (prefixed with `Wat zijn uitdagingen en thema's waar je klanten over hoort?`)
-11. Multiple technology fields (prefixed with `TechAndConcepts`)
-12. Multiple product fields (prefixed with `Wat zijn concrete producten en leveranciers waar je klanten over hoort?`)
-13. `Edge Computing` - Interest level in Edge Computing
-14. `Data Governance` - Interest level in Data Governance
-15. `nieuwe werkplek & kennisdeling / "beter samenwerken"` - Interest level in new workplace & knowledge sharing
-16. `Opmerkingen, Wensen, Suggesties` - Comments, wishes, suggestions
+### Interest Categories
 
-### Interest Levels
+The following fields contain maps of topics to interest levels (in Dutch):
 
-Interest levels in the survey are recorded using the following values:
-- `Sterke, concrete interesse` - Strong, concrete interest
-- `Redelijke interesse` - Reasonable interest
-- `Vage interesse` - Vague interest
-- `Niets over gehoord` - Not heard about
+- `challenges`: Business and IT challenges with interest levels
+- `techConcepts`: Technical concepts with interest levels
+- `productsVendors`: Products and vendors with interest levels
 
-## Data Files
+### Interest Levels (in Dutch)
 
-- `brightspots.csv` - Original survey data
-- `brightspots copy.csv` - Working copy with additional records
+Interest levels are expressed in Dutch with the following values:
+- "Niets over gehoord" (Haven't heard about it)
+- "Vage interesse" (Vague interest)
+- "Redelijke interesse" (Reasonable interest)
+- "Sterke, concrete interesse" (Strong, concrete interest)
 
-## Notes on Missing Fields
+## Example Entry
 
-- The original records (IDs 1-40) may be missing values for the last four fields: `Edge Computing`, `Data Governance`, `nieuwe werkplek & kennisdeling`, and `Opmerkingen, Wensen, Suggesties`
-- The newer records (IDs 41-49) include these fields
-- When processing this data, applications should handle the potential absence of these fields gracefully
+```json
+{
+  "Id": "1",
+  "Start time": "02-03-2025 07:24",
+  "Completion time": "02-03-2025 07:41",
+  "Email": "anonymous",
+  "Name": "",
+  "Jouw naam": "Debra Towne",
+  "Rol": "CTO",
+  "Jouw bedrijf": "Frami - Beier",
+  "newCustomerThemes": "prioritizing innovative digital ecosystem evolution; investing in transformative omnichannel experience design; focusing on high-priority predictive analytics platform",
+  "newCustomerThemesTags": [
+    "Digital Ecosystem Evolution",
+    "Omnichannel Experience Design",
+    "Predictive Analytics Platform"
+  ],
+  "emergingTechVendorProduct": "VirtualSphere across business units (short-term); CloudFunction in production environment (immediate); WebFlux Apps in production environment (ongoing)",
+  "emergingTechVendorProductTags": [
+    "VirtualSphere",
+    "CloudFunction",
+    "WebFlux Apps"
+  ],
+  "challenges": {
+    "Digital Ecosystem Transformation": "Sterke, concrete interesse",
+    "Multi-Cloud Strategy": "Sterke, concrete interesse",
+    "Cyber Resilience": "Vage interesse"
+  },
+  "techConcepts": {
+    "NeuralSync": "Vage interesse",
+    "QuantumFlow": "Vage interesse",
+    "CloudMesh": "Vage interesse"
+  },
+  "productsVendors": {
+    "CloudSphere": "Vage interesse",
+    "NexusStack": "Sterke, concrete interesse",
+    "RelationForge": "Niets over gehoord"
+  }
+}
+```
+
+## Usage
+
+This data is used to analyze and visualize technology trends, customer themes, and interest levels across different organizations. The web application processes this data to generate insights about brightspots (areas of high interest) and whitespots (areas of opportunity) in the technology landscape.
