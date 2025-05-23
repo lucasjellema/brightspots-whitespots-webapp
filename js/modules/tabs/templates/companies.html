@@ -71,7 +71,7 @@
                                  data-bs-toggle="collapse" href="#themeAssessmentCollapse" role="button" 
                                  aria-expanded="false" aria-controls="themeAssessmentCollapse">
                                 <h5 class="mb-0">
-                                    Theme Assessment
+                                    Theme Assessments for Company
                                     <i id="themeAssessmentCollapseIcon" class="bi bi-chevron-down ms-2"></i>
                                 </h5>
                             </div>
@@ -96,62 +96,109 @@
                     </div>
                 </div>
                 
-                <!-- Challenges Section -->
 
-                <!-- Challenges Section -->
+                <!-- Challenges Section (Collapsible) -->
                 <div class="mb-4">
-                    <h6>Challenges</h6>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Challenge</th>
-                                    <th>Interest Level</th>
-                                    <th class="actions-column" id="challengesActionsHeader">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="challengesTableBody">
-                                <!-- Challenges will be populated dynamically -->
-                            </tbody>
-                        </table>
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <!-- Separate the collapse toggle from any potential buttons -->
+                            <div class="d-flex align-items-center" 
+                                 data-bs-toggle="collapse" href="#challengesCollapse" role="button" 
+                                 aria-expanded="false" aria-controls="challengesCollapse">
+                                <h5 class="mb-0">
+                                    Identified Customer Challenges
+                                    <i id="challengesCollapseIcon" class="bi bi-chevron-down ms-2"></i>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="collapse" id="challengesCollapse">
+                            <div class="card-body p-2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Challenge</th>
+                                                <th>Interest Level</th>
+                                                <th class="actions-column" id="challengesActionsHeader">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="challengesTableBody">
+                                            <!-- Challenges will be populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tech Concepts Section -->
+                <!-- Tech Concepts Section (Collapsible) -->
                 <div class="mb-4">
-                    <h6>Tech Concepts</h6>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Tech Concept</th>
-                                    <th>Interest Level</th>
-                                    <th class="actions-column" id="techConceptsActionsHeader">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="techConceptsTableBody">
-                                <!-- Tech concepts will be populated dynamically -->
-                            </tbody>
-                        </table>
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <!-- Separate the collapse toggle from any potential buttons -->
+                            <div class="d-flex align-items-center" 
+                                 data-bs-toggle="collapse" href="#techConceptsCollapse" role="button" 
+                                 aria-expanded="false" aria-controls="techConceptsCollapse">
+                                <h5 class="mb-0">
+                                    Spotted Upcoming Tech Concepts
+                                    <i id="techConceptsCollapseIcon" class="bi bi-chevron-down ms-2"></i>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="collapse" id="techConceptsCollapse">
+                            <div class="card-body p-2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Tech Concept</th>
+                                                <th>Interest Level</th>
+                                                <th class="actions-column" id="techConceptsActionsHeader">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="techConceptsTableBody">
+                                            <!-- Tech concepts will be populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Products/Vendors Section -->
+                <!-- Products/Vendors Section (Collapsible) -->
                 <div class="mb-4">
-                    <h6>Products & Vendors</h6>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Product/Vendor</th>
-                                    <th>Interest Level</th>
-                                    <th class="actions-column" id="productsVendorsActionsHeader">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="productsVendorsTableBody">
-                                <!-- Products/vendors will be populated dynamically -->
-                            </tbody>
-                        </table>
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <!-- Separate the collapse toggle from any potential buttons -->
+                            <div class="d-flex align-items-center" 
+                                 data-bs-toggle="collapse" href="#productsVendorsCollapse" role="button" 
+                                 aria-expanded="false" aria-controls="productsVendorsCollapse">
+                                <h5 class="mb-0">
+                                    Observed Products & Vendors
+                                    <i id="productsVendorsCollapseIcon" class="bi bi-chevron-down ms-2"></i>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="collapse" id="productsVendorsCollapse">
+                            <div class="card-body p-2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Product/Vendor</th>
+                                                <th>Interest Level</th>
+                                                <th class="actions-column" id="productsVendorsActionsHeader">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="productsVendorsTableBody">
+                                            <!-- Products/vendors will be populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

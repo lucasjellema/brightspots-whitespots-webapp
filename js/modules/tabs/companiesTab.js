@@ -297,24 +297,27 @@ function displayCompanyDetails(companyData) {
     console.log('Showing theme assessment section for company:', companyData.name);
     themeAssessmentSection.style.display = 'block';
     
-    // Initialize the collapsible panel - Show it by default for better visibility
+    // Initialize the collapsible panel - Initially collapsed
     const collapseElement = document.getElementById('themeAssessmentCollapse');
     if (collapseElement) {
-        // Add the 'show' class to make it visible by default
-        collapseElement.classList.add('show');
+        // Ensure the panel is collapsed by removing the 'show' class
+        collapseElement.classList.remove('show');
         
-        // Update the icon to match the opened state
+        // Make sure the icon is in the correct state for collapsed panel
         const iconElement = document.getElementById('themeAssessmentCollapseIcon');
         if (iconElement) {
-            iconElement.classList.remove('bi-chevron-down');
-            iconElement.classList.add('bi-chevron-up');
+            iconElement.classList.remove('bi-chevron-up');
+            iconElement.classList.add('bi-chevron-down');
         }
     }
     
-    // Initialize the collapsible panel functionality
+    // Initialize all collapsible panels
     initializeCollapsePanel('themeAssessmentCollapse', 'themeAssessmentCollapseIcon');
+    initializeCollapsePanel('challengesCollapse', 'challengesCollapseIcon');
+    initializeCollapsePanel('techConceptsCollapse', 'techConceptsCollapseIcon');
+    initializeCollapsePanel('productsVendorsCollapse', 'productsVendorsCollapseIcon');
     
-    // Display the compact summary in the collapsible panel
+    // Display the compact summary in the theme assessment panel
     displayThemeAssessmentSummary(companyData.name);
     
     // Only initialize the edit functionality when in admin/UUID mode
