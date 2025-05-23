@@ -93,6 +93,18 @@ Then open `http://localhost:8000` in your browser.
 3. Tab modules render the data using HTML templates and Chart.js
 4. User interactions trigger updates to the displayed data
 
+### Data Loading Options
+
+The application supports two methods for loading data:
+
+1. **Default Local Data**: By default, the application loads data from the local `data/brightspots.json` file
+2. **External Data Source**: You can specify an external data source by adding the `parDataFile` query parameter to the URL
+
+Example URL with external data source:
+```
+http://localhost:8000/index.html?parDataFile=https://example.com/path/to/data.json
+```
+
 ## Extending the Application
 
 ### Adding a New Tab
