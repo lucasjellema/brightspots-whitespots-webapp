@@ -1,3 +1,7 @@
+
+const DELTA_FOLDER_PREFIX = 'conclusion-assets/brightspots-deltas/';
+
+
 // Data Service for Brightspots & Whitespots Dashboard
 let surveyData = [];
 let themesData = [];
@@ -6,16 +10,18 @@ let interestDetails = {
     techConcepts: {},
     productsVendors: {}
 };
-let themeAssessments = {};
 
 /**
  * Load survey data from the JSON file or from a URL specified in the parDataFile query parameter
+ * If deltasFolderPAR and uuid parameters are present, also load company-specific delta data
  */
 export async function loadSurveyData() {
     try {
-        // Check if parDataFile query parameter is defined
+        // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const dataFileUrl = urlParams.get('parDataFile');
+        const deltasFolderUrl = urlParams.get('deltasFolderPAR');
+        const uuid = urlParams.get('uuid');
         
         // Use the provided URL or fall back to the default local file
         const dataSource = dataFileUrl || 'data/brightspots.json';
@@ -29,16 +35,17 @@ export async function loadSurveyData() {
         // Parse the JSON response
         const loadedData = await response.json();
         
-        // Check if the data is in the new format (with surveyData and themeAssessments)
+        // Check if the data is in the new format (with surveyData property)
         if (loadedData.surveyData && Array.isArray(loadedData.surveyData)) {
             // Set the survey data
             surveyData = loadedData.surveyData;
             console.log('Survey data loaded successfully:', surveyData.length, 'entries');
             
-            // Check if there are theme assessments and set them
+            // Handle legacy theme assessments format (if present)
             if (loadedData.themeAssessments) {
-                themeAssessments = loadedData.themeAssessments;
-                console.log('Theme assessments loaded successfully for', Object.keys(themeAssessments).length, 'companies');
+                console.log('Legacy theme assessments found, migrating to UUID-based storage...');
+                // Migrate theme assessments to be stored with each record
+                migrateThemeAssessments(loadedData.themeAssessments);
             }
         } else if (Array.isArray(loadedData)) {
             // Handle the legacy format (just an array of survey data)
@@ -48,10 +55,81 @@ export async function loadSurveyData() {
             throw new Error('Invalid data format: Expected an array or an object with surveyData property');
         }
         
+        // Check if we should load a delta file for a specific company
+        if (deltasFolderUrl && uuid) {
+            await loadCompanyDeltaData(deltasFolderUrl, uuid);
+        }
+        
         return surveyData;
     } catch (error) {
         console.error('Error loading survey data:', error);
         throw error;
+    }
+}
+
+/**
+ * Load company-specific delta data from a remote folder
+ * @param {string} deltasFolderUrl - Base URL for the delta files folder
+ * @param {string} uuid - UUID of the record to update
+ */
+async function loadCompanyDeltaData(deltasFolderUrl, uuid) {
+    try {
+        // Ensure the folder URL ends with a slash
+        const folderUrl = (deltasFolderUrl.endsWith('/') ? deltasFolderUrl : `${deltasFolderUrl}/`)+DELTA_FOLDER_PREFIX;
+        
+        // Construct the delta file URL
+        const deltaFileUrl = `${folderUrl}delta${uuid}.json`;
+        console.log('Attempting to load company delta data from:', deltaFileUrl);
+        
+        // Fetch the delta file
+        const response = await fetch(deltaFileUrl);
+        
+        // If the file doesn't exist, just return (not an error)
+        if (response.status === 404) {
+            console.log(`No delta file found for record ${uuid}`);
+            return;
+        }
+        
+        // Handle other HTTP errors
+        if (!response.ok) {
+            throw new Error(`HTTP error loading delta file: ${response.status}`);
+        }
+        
+        // Parse the delta data
+        const deltaData = await response.json();
+        console.log('Delta data loaded successfully for record:', uuid);
+        
+        // Find the record to update
+        const recordToUpdate = surveyData.find(record => record.Id === uuid);
+        
+        if (!recordToUpdate) {
+            console.warn(`Cannot apply delta data: No record found with ID ${uuid}`);
+            return;
+        }
+        
+        // Apply the delta data by deep merging it with the existing record
+        Object.keys(deltaData).forEach(key => {
+            // For complex objects like themeAssessments, we want to merge rather than replace
+            if (typeof deltaData[key] === 'object' && deltaData[key] !== null && !Array.isArray(deltaData[key])) {
+                // If the property doesn't exist in the record, initialize it
+                if (!recordToUpdate[key] || typeof recordToUpdate[key] !== 'object') {
+                    recordToUpdate[key] = {};
+                }
+                
+                // Deep merge the objects
+                Object.keys(deltaData[key]).forEach(subKey => {
+                    recordToUpdate[key][subKey] = deltaData[key][subKey];
+                });
+            } else {
+                // For primitive values or arrays, just replace
+                recordToUpdate[key] = deltaData[key];
+            }
+        });
+        
+        console.log(`Applied delta data to record ${uuid}`);
+    } catch (error) {
+        console.error('Error loading company delta data:', error);
+        // Don't throw the error - we want the application to continue even if delta loading fails
     }
 }
 
@@ -86,10 +164,13 @@ export function saveInterestDetails(company, category, topic, details) {
         entry['Jouw bedrijf'] === company && (!entry.Rol || entry.Rol.trim() === '')
     );
     
+    let updatedRecord = null;
     if (companyEntries.length > 0) {
+        updatedRecord = companyEntries[0];
+        
         // Create the interestDetails property if it doesn't exist
-        if (!companyEntries[0].interestDetails) {
-            companyEntries[0].interestDetails = {
+        if (!updatedRecord.interestDetails) {
+            updatedRecord.interestDetails = {
                 challenges: {},
                 techConcepts: {},
                 productsVendors: {}
@@ -97,11 +178,21 @@ export function saveInterestDetails(company, category, topic, details) {
         }
         
         // Update the specific category and topic
-        if (!companyEntries[0].interestDetails[category]) {
-            companyEntries[0].interestDetails[category] = {};
+        if (!updatedRecord.interestDetails[category]) {
+            updatedRecord.interestDetails[category] = {};
         }
         
-        companyEntries[0].interestDetails[category][topic] = details;
+        updatedRecord.interestDetails[category][topic] = details;
+        
+        // Check if we need to save delta file (UUID mode and deltasFolderPAR)
+        const urlParams = new URLSearchParams(window.location.search);
+        const deltasFolderUrl = urlParams.get('deltasFolderPAR');
+        const uuid = urlParams.get('uuid');
+        
+        if (deltasFolderUrl && uuid && updatedRecord.Id === uuid) {
+            // Save the entire record as the delta file
+            saveRecordDelta(uuid, updatedRecord, deltasFolderUrl);
+        }
     }
     
     return true;
@@ -628,22 +719,62 @@ export function getThemesData() {
 }
 
 /**
+ * Migrate legacy theme assessments to UUID-based storage
+ * @param {Object} legacyAssessments - The old format theme assessments
+ */
+function migrateThemeAssessments(legacyAssessments) {
+    // For each company in the legacy assessments
+    for (const [companyName, assessments] of Object.entries(legacyAssessments)) {
+        // Find all records for this company
+        const companyRecords = surveyData.filter(record => 
+            record['Jouw bedrijf'] === companyName);
+        
+        if (companyRecords.length > 0) {
+            // Add theme assessments to the first record for this company
+            const primaryRecord = companyRecords[0];
+            if (!primaryRecord.themeAssessments) {
+                primaryRecord.themeAssessments = {};
+            }
+            // Copy the assessments to the record
+            Object.assign(primaryRecord.themeAssessments, assessments);
+            console.log(`Migrated theme assessments for ${companyName} to record ID ${primaryRecord.Id}`);
+        } else {
+            console.warn(`Could not migrate theme assessments for ${companyName}: no matching records found`);
+        }
+    }
+}
+
+/**
  * Get theme assessments for a company
  * @param {string} companyName - The company name
  */
 export function getThemeAssessments(companyName) {
-    if (!themeAssessments[companyName]) {
+    // Find the first record for this company
+    const companyRecord = surveyData.find(record => record['Jouw bedrijf'] === companyName);
+    
+    if (!companyRecord || !companyRecord.themeAssessments) {
         return {};
     }
-    return themeAssessments[companyName];
+    return companyRecord.themeAssessments;
 }
 
 /**
  * Get all theme assessments
- * @returns {Object} All theme assessments
+ * @returns {Object} All theme assessments indexed by company name
  */
 export function getAllThemeAssessments() {
-    return themeAssessments;
+    // Build a map of company name -> theme assessments
+    const allAssessments = {};
+    
+    // Group theme assessments by company name
+    for (const record of surveyData) {
+        const companyName = record['Jouw bedrijf'];
+        if (companyName && record.themeAssessments) {
+            allAssessments[companyName] = record.themeAssessments;
+        }
+    }
+    
+    return allAssessments;
 }
 
 /**
@@ -654,8 +785,117 @@ export function getAllThemeAssessments() {
 export function saveThemeAssessments(companyName, assessments) {
     if (!companyName) return false;
     
-    themeAssessments[companyName] = assessments;
-    console.log(`Saved theme assessments for ${companyName}`);
+    // Find all records for this company
+    const companyRecords = surveyData.filter(record => 
+        record['Jouw bedrijf'] === companyName);
+    
+    if (companyRecords.length === 0) {
+        console.error(`Cannot save theme assessments: no records found for company ${companyName}`);
+        return false;
+    }
+    
+    // Save to the first record for this company
+    const primaryRecord = companyRecords[0];
+    if (!primaryRecord.themeAssessments) {
+        primaryRecord.themeAssessments = {};
+    }
+    
+    // Update the assessments
+    primaryRecord.themeAssessments = assessments;
+    console.log(`Saved theme assessments for ${companyName} to record ID ${primaryRecord.Id}`);
+    
+    // If we're in UUID mode and deltasFolderPAR is defined, save the delta file
+    const urlParams = new URLSearchParams(window.location.search);
+    const deltasFolderUrl = urlParams.get('deltasFolderPAR');
+    const uuid = urlParams.get('uuid');
+    
+    if (deltasFolderUrl && uuid && primaryRecord.Id === uuid) {
+        // Save the entire record as the delta file
+        saveRecordDelta(uuid, primaryRecord, deltasFolderUrl);
+    }
+    
+    return true;
+}
+
+/**
+ * Save a delta file for a specific record to the remote location
+ * @param {string} uuid - The UUID of the record
+ * @param {Object} deltaData - The delta data to save
+ * @param {string} deltasFolderUrl - Base URL for the delta files folder
+ * @returns {Promise<boolean>} - Whether the save was successful
+ */
+export async function saveRecordDelta(uuid, deltaData, deltasFolderUrl) {
+    try {
+        // Ensure the folder URL ends with a slash
+        const folderUrl = (deltasFolderUrl.endsWith('/') ? deltasFolderUrl : `${deltasFolderUrl}/`)+DELTA_FOLDER_PREFIX;
+        
+        // Construct the delta file URL
+        const deltaFileUrl = `${folderUrl}delta${uuid}.json`;
+        console.log('Saving delta file to:', deltaFileUrl);
+        
+        // Convert the delta data to JSON
+        const jsonData = JSON.stringify(deltaData, null, 2);
+        
+        // Use fetch with PUT method to save the file
+        const response = await fetch(deltaFileUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: jsonData
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error saving delta file: ${response.status}`);
+        }
+        
+        console.log(`Successfully saved delta file for record ${uuid}`);
+        return true;
+    } catch (error) {
+        console.error('Error saving delta file:', error);
+        // Show a user-friendly error message
+        alert('Could not save changes to the remote location. Your changes are saved locally but will not persist after page reload.');
+        return false;
+    }
+}
+
+/**
+ * Save customer themes for a company
+ * @param {string} companyName - The company name
+ * @param {string|Array} themes - The themes to save (string or array of strings)
+ * @returns {boolean} - Whether the save was successful
+ */
+export function saveCustomerThemes(companyName, themes) {
+    if (!companyName) return false;
+    
+    // Ensure themes is a string
+    const themesString = Array.isArray(themes) ? themes.join('; ') : themes;
+    
+    // Find all records for this company
+    const companyRecords = surveyData.filter(record => 
+        record['Jouw bedrijf'] === companyName && (!record.Rol || record.Rol.trim() === '')
+    );
+    
+    if (companyRecords.length === 0) {
+        console.error(`Cannot save customer themes: no records found for company ${companyName}`);
+        return false;
+    }
+    
+    // Save to the first record for this company
+    const primaryRecord = companyRecords[0];
+    primaryRecord.newCustomerThemes = themesString;
+    console.log(`Saved customer themes for ${companyName} to record ID ${primaryRecord.Id}`);
+    
+    // If we're in UUID mode and deltasFolderPAR is defined, save the delta file
+    const urlParams = new URLSearchParams(window.location.search);
+    const deltasFolderUrl = urlParams.get('deltasFolderPAR');
+    const uuid = urlParams.get('uuid');
+    
+    if (deltasFolderUrl && uuid && primaryRecord.Id === uuid) {
+        // Save the entire record as the delta file
+        saveRecordDelta(uuid, primaryRecord, deltasFolderUrl);
+    }
+    
     return true;
 }
 

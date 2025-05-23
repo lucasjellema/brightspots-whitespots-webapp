@@ -7,7 +7,8 @@ import {
     loadThemesData,
     getThemesData,
     getThemeAssessments,
-    saveThemeAssessments 
+    saveThemeAssessments,
+    saveCustomerThemes
 } from '../../dataService.js';
 
 /**
@@ -1213,18 +1214,12 @@ function saveInterestDetailsHandler() {
  * @param {string} companyName - The name of the company
  * @param {string} themesText - The customer themes text to save
  */
-function saveCustomerThemes(companyName, themesText) {
+function saveCustomerThemesHandler(companyName, themesText) {
     try {
-        // Get current survey data
-        const surveyData = getSurveyData();
+        console.log('Saving customer themes for', companyName);
         
-        // Find the company records (without a role)
-        const companyRecords = surveyData.filter(entry => 
-            entry['Jouw bedrijf'] === companyName && (!entry.Rol || entry.Rol.trim() === '')
-        );
-        
-        if (companyRecords.length === 0) {
-            alert('No company record found to update');
+        if (!companyName || !themesText) {
+            console.error('Missing company name or themes text');
             return false;
         }
         
@@ -1233,16 +1228,20 @@ function saveCustomerThemes(companyName, themesText) {
             .map(theme => theme.trim())
             .filter(theme => theme.length > 0);
         
-        // Update the first record for this company
-        companyRecords[0].newCustomerThemes = themes.join('; ');
-        
-        alert('Customer themes saved successfully');
-        
-        // Refresh the company details
-        const companiesData = processCompaniesData(getSurveyData());
-        displayCompanyDetails(companiesData[companyName]);
-        
-        return true;
+        // Use the dataService function to save the customer themes
+        // This encapsulates all the data persistence logic including delta file saving
+        if (saveCustomerThemes(companyName, themes)) {
+            alert('Customer themes saved successfully');
+            
+            // Refresh the company details
+            const companiesData = processCompaniesData(getSurveyData());
+            displayCompanyDetails(companiesData[companyName]);
+            
+            return true;
+        } else {
+            alert('No company record found to update');
+            return false;
+        }
     } catch (error) {
         console.error('Error saving customer themes:', error);
         alert('Failed to save customer themes: ' + error.message);
