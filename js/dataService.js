@@ -1,12 +1,27 @@
 // Data Service for Brightspots & Whitespots Dashboard
 let surveyData = [];
 
+// Store interest details for companies
+let interestDetails = {
+    challenges: {},
+    techConcepts: {},
+    productsVendors: {}
+};
+
 /**
- * Load survey data from the JSON file
+ * Load survey data from the JSON file or from a URL specified in the parDataFile query parameter
  */
 export async function loadSurveyData() {
     try {
-        const response = await fetch('data/brightspots.json');
+        // Check if parDataFile query parameter is defined
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataFileUrl = urlParams.get('parDataFile');
+        
+        // Use the provided URL or fall back to the default local file
+        const dataSource = dataFileUrl || 'data/brightspots.json';
+        console.log('Loading data from source:', dataSource);
+        
+        const response = await fetch(dataSource);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -25,6 +40,68 @@ export async function loadSurveyData() {
  */
 export function getSurveyData() {
     return surveyData;
+}
+
+/**
+ * Save interest details for a company and topic
+ * @param {string} company - Company name
+ * @param {string} category - 'challenges', 'techConcepts', or 'productsVendors'
+ * @param {string} topic - The specific topic name
+ * @param {Object} details - Object containing where, when, what, and from details
+ */
+export function saveInterestDetails(company, category, topic, details) {
+    if (!interestDetails[category]) {
+        interestDetails[category] = {};
+    }
+    
+    if (!interestDetails[category][company]) {
+        interestDetails[category][company] = {};
+    }
+    
+    interestDetails[category][company][topic] = details;
+    
+    // Also update the first entry for this company in the survey data
+    // This ensures the data persists when saved
+    const companyEntries = surveyData.filter(entry => 
+        entry['Jouw bedrijf'] === company && (!entry.Rol || entry.Rol.trim() === '')
+    );
+    
+    if (companyEntries.length > 0) {
+        // Create the interestDetails property if it doesn't exist
+        if (!companyEntries[0].interestDetails) {
+            companyEntries[0].interestDetails = {
+                challenges: {},
+                techConcepts: {},
+                productsVendors: {}
+            };
+        }
+        
+        // Update the specific category and topic
+        if (!companyEntries[0].interestDetails[category]) {
+            companyEntries[0].interestDetails[category] = {};
+        }
+        
+        companyEntries[0].interestDetails[category][topic] = details;
+    }
+    
+    return true;
+}
+
+/**
+ * Get interest details for a company and topic
+ * @param {string} company - Company name
+ * @param {string} category - 'challenges', 'techConcepts', or 'productsVendors'
+ * @param {string} topic - The specific topic name
+ * @returns {Object|null} - The details object or null if not found
+ */
+export function getInterestDetails(company, category, topic) {
+    if (!interestDetails[category] || 
+        !interestDetails[category][company] || 
+        !interestDetails[category][company][topic]) {
+        return null;
+    }
+    
+    return interestDetails[category][company][topic];
 }
 
 /**
