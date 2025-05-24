@@ -1262,9 +1262,12 @@ function hideAdminFeatures() {
     }
     
     // Hide the entire tags marked for removal section
-    const tagsToRemoveSection = document.querySelector('#tech-tags-to-remove').closest('.mt-4');
-    if (tagsToRemoveSection) {
-        tagsToRemoveSection.style.display = 'none';
+    const tagElement = document.querySelector('#tech-tags-to-remove');
+    if (tagElement) {
+        const tagsToRemoveSection = tagElement.closest('.mt-4');
+        if (tagsToRemoveSection) {
+            tagsToRemoveSection.style.display = 'none';
+        }
     }
 }
 
