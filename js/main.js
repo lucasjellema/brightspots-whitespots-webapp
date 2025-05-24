@@ -6,6 +6,7 @@ import { loadEmergingTechContent } from './modules/tabs/emergingTechTab.js';
 import { loadTechnologyTrendsContent } from './modules/tabs/technologyTrendsTab.js';
 import { loadCompaniesContent } from './modules/tabs/companiesTab.js';
 import { loadRolesContent } from './modules/tabs/rolesTab.js';
+import { loadAboutContent } from './modules/tabs/aboutTab.js';
 
 // Main JavaScript file for Brightspots & Whitespots Dashboard
 
@@ -15,7 +16,8 @@ let chartsInitialized = {
     'emerging-tech': false,
     'technology-trends': false,
     'companies': false,
-    'roles': false
+    'roles': false,
+    'about': false
 };
 
 // Initialize the application when DOM is fully loaded
@@ -179,6 +181,9 @@ function initializeTabEventListeners() {
                     break;
                 case 'roles-tab':
                     loadRolesContent();
+                    break;
+                case 'about-tab':
+                    loadAboutContent();
                     break;
                 default:
                     console.error('Unknown tab ID:', targetTabId);
