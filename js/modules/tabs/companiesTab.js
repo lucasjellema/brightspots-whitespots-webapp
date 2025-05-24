@@ -543,19 +543,74 @@ function displayThemeAssessment(companyName, isEditable) {
         const themeName = theme.Name;
         const existingAssessment = existingAssessments[themeId] || {};
         
+        // Create unique IDs for collapsible elements
+        const collapseId = `theme-collapse-${themeId}`;
+        
+        // Get status label and class based on involvement
+        const involvement = existingAssessment.involvement || 'undefined';
+        let statusLabel = 'Not defined';
+        let statusClass = 'status-undefined';
+        
+        // Map involvement value to readable label
+        assessmentOptions.forEach(option => {
+            if (option.value === involvement) {
+                statusLabel = option.label;
+                statusClass = `status-${option.value}`;
+            }
+        });
+        
         // Create a card for each theme
         const themeCard = document.createElement('div');
         themeCard.className = 'card mb-3';
         
-        // Create card header
+        // Create card header with collapsible functionality
         const cardHeader = document.createElement('div');
         cardHeader.className = 'card-header';
-        cardHeader.textContent = themeName;
+        cardHeader.setAttribute('data-bs-toggle', 'collapse');
+        cardHeader.setAttribute('data-bs-target', `#${collapseId}`);
+        cardHeader.setAttribute('aria-expanded', 'false');
+        cardHeader.setAttribute('aria-controls', collapseId);
+        cardHeader.style.cursor = 'pointer';
+        
+        // Create header content with theme name and status
+        const headerContent = document.createElement('div');
+        headerContent.className = 'd-flex justify-content-between align-items-center w-100';
+        
+        const themeTitleEl = document.createElement('span');
+        themeTitleEl.className = 'theme-name';
+        themeTitleEl.textContent = themeName;
+        
+        const statusBadge = document.createElement('span');
+        statusBadge.className = `theme-status ${statusClass}`;
+        statusBadge.textContent = statusLabel;
+        
+        // Add tooltip with description (if any)
+        if (existingAssessment.description) {
+            statusBadge.setAttribute('data-bs-toggle', 'tooltip');
+            statusBadge.setAttribute('data-bs-placement', 'top');
+            statusBadge.setAttribute('title', existingAssessment.description);
+        }
+        
+        const collapseIcon = document.createElement('i');
+        collapseIcon.className = 'bi bi-chevron-down collapse-icon';
+        
+        headerContent.appendChild(themeTitleEl);
+        headerContent.appendChild(statusBadge);
+        headerContent.appendChild(collapseIcon);
+        
+        cardHeader.appendChild(headerContent);
         themeCard.appendChild(cardHeader);
         
-        // Create card body
+        // Create collapsible card body
+        const collapseDiv = document.createElement('div');
+        collapseDiv.id = collapseId;
+        collapseDiv.className = 'collapse';
+        
         const cardBody = document.createElement('div');
         cardBody.className = 'card-body';
+        
+        collapseDiv.appendChild(cardBody);
+        themeCard.appendChild(collapseDiv);
         
         // Create radio group for assessment options
         const radioGroup = document.createElement('div');
@@ -588,6 +643,36 @@ function displayThemeAssessment(companyName, isEditable) {
             radioInput.checked = isChecked;
             radioInput.disabled = !isEditable;
             
+            // Add event listener to update status badge when radio button is clicked
+            if (isEditable) {
+                radioInput.addEventListener('change', () => {
+                    if (radioInput.checked) {
+                        const selectedOption = assessmentOptions.find(opt => opt.value === radioInput.value);
+                        if (selectedOption) {
+                            const badge = themeCard.querySelector('.theme-status');
+                            if (badge) {
+                                badge.textContent = selectedOption.label;
+                                badge.className = `theme-status status-${selectedOption.value}`;
+                                
+                                // When user changes the status, update description tooltip
+                                const descriptionField = document.getElementById(`description-${themeId}`);
+                                if (descriptionField && descriptionField.value.trim()) {
+                                    badge.setAttribute('data-bs-toggle', 'tooltip');
+                                    badge.setAttribute('data-bs-placement', 'top');
+                                    badge.setAttribute('title', descriptionField.value.trim());
+                                    // Destroy and reinitialize tooltip
+                                    const tooltip = bootstrap.Tooltip.getInstance(badge);
+                                    if (tooltip) {
+                                        tooltip.dispose();
+                                    }
+                                    new bootstrap.Tooltip(badge);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
             const radioLabel = document.createElement('label');
             radioLabel.className = `btn btn-outline-${option.color} w-100`;
             radioLabel.setAttribute('for', `${option.value}-${themeId}`);
@@ -619,12 +704,36 @@ function displayThemeAssessment(companyName, isEditable) {
         descriptionTextarea.value = existingAssessment.description || '';
         descriptionTextarea.disabled = !isEditable;
         
+        // Add event listener to update tooltip when description changes
+        if (isEditable) {
+            descriptionTextarea.addEventListener('input', () => {
+                const badge = themeCard.querySelector('.theme-status');
+                if (badge && descriptionTextarea.value.trim()) {
+                    badge.setAttribute('data-bs-toggle', 'tooltip');
+                    badge.setAttribute('data-bs-placement', 'top');
+                    badge.setAttribute('title', descriptionTextarea.value.trim());
+                    
+                    // Refresh tooltip if it exists
+                    const tooltip = bootstrap.Tooltip.getInstance(badge);
+                    if (tooltip) {
+                        tooltip.dispose();
+                    }
+                    new bootstrap.Tooltip(badge);
+                } else if (badge) {
+                    // Remove tooltip if description is empty
+                    badge.removeAttribute('data-bs-toggle');
+                    badge.removeAttribute('title');
+                    const tooltip = bootstrap.Tooltip.getInstance(badge);
+                    if (tooltip) {
+                        tooltip.dispose();
+                    }
+                }
+            });
+        }
+        
         descriptionGroup.appendChild(descriptionLabel);
         descriptionGroup.appendChild(descriptionTextarea);
         cardBody.appendChild(descriptionGroup);
-        
-        // Add card body to card
-        themeCard.appendChild(cardBody);
         
         // Add card to form
         form.appendChild(themeCard);
@@ -633,28 +742,39 @@ function displayThemeAssessment(companyName, isEditable) {
     // Add form to container
     container.appendChild(form);
     
-    // Configure save button in the modal
-    const saveButton = document.getElementById('saveThemeAssessmentBtn');
-    if (saveButton && isEditable) {
-        // Remove any existing event listeners to prevent duplicates
-        const newSaveButton = saveButton.cloneNode(true);
-        saveButton.parentNode.replaceChild(newSaveButton, saveButton);
+    // Configure save buttons in the modal (both header and footer)
+    const footerSaveButton = document.getElementById('saveThemeAssessmentBtn');
+    const headerSaveButton = document.getElementById('headerSaveThemeAssessmentBtn');
+    
+    // Define save function to be used by both buttons
+    const saveFunction = () => {
+        saveThemeAssessmentHandler(companyName);
         
-        // Add save handler that updates both the modal and the summary view
-        newSaveButton.addEventListener('click', () => {
-            saveThemeAssessmentHandler(companyName);
-            
-            // After saving, update the summary view
-            setTimeout(() => {
-                displayThemeAssessmentSummary(companyName);
-            }, 100);
-            
-            // Close the modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('themeAssessmentModal'));
-            if (modal) {
-                modal.hide();
-            }
-        });
+        // After saving, update the summary view
+        setTimeout(() => {
+            displayThemeAssessmentSummary(companyName);
+        }, 100);
+        
+        // Close the modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('themeAssessmentModal'));
+        if (modal) {
+            modal.hide();
+        }
+    };
+    
+    if (isEditable) {
+        // Remove any existing event listeners to prevent duplicates by replacing elements
+        if (footerSaveButton) {
+            const newFooterButton = footerSaveButton.cloneNode(true);
+            footerSaveButton.parentNode.replaceChild(newFooterButton, footerSaveButton);
+            newFooterButton.addEventListener('click', saveFunction);
+        }
+        
+        if (headerSaveButton) {
+            const newHeaderButton = headerSaveButton.cloneNode(true);
+            headerSaveButton.parentNode.replaceChild(newHeaderButton, headerSaveButton);
+            newHeaderButton.addEventListener('click', saveFunction);
+        }
     }
 }
 
